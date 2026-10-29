@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_icones.html" import icone, logo %}
+
+{% block classe_corps %}app espace-{{ 'admin' if request.endpoint.startswith('admin') else 'membre' }}{% endblock %}
+
+{% block entete %}
+{% set nom_utilisateur = g.admin["login"] if request.endpoint.startswith('admin') else g.membre["nom"] %}
+<header class="barre barre-app">
+    <div class="barre-contenu barre-contenu-app">
+        <a class="logo-lien" href="{{ url_for('accueil') }}" aria-label="FitZone, retour au site">
+            {{ logo(34) }}<span class="logo-texte">FitZone</span>
+        </a>
+        <div class="barre-actions">
+            <span class="puce-utilisateur">
+                <span class="avatar avatar-petit" aria-hidden="true">{{ nom_utilisateur|initiales }}</span>
+                <span class="puce-nom">{{ nom_utilisateur }}</span>
+            </span>
+            <form class="formulaire-en-ligne" method="post" action="{{ url_for('deconnexion') }}">
+                <input type="hidden" name="csrf_token" value="{{ jeton_csrf() }}">
+                <button type="submit" class="bouton bouton-contour bouton-petit">{{ icone('deconnexion', 16) }}<span class="bureau-seulement">Déconnexion</span><span class="visuellement-cache mobile-seulement">Déconnexion</span></button>
+            </form>
+        </div>
+    </div>
+</header>
+{% endblock %}
+
+{% block corps %}
+{% set est_admin = request.endpoint.startswith('admin') %}
+{% set ep = request.endpoint %}
+{% set expirant = request.args.get('filtre') == 'expirant' %}
+{% set items_admin = [
+    (url_for('admin_tableau_de_bord'), 'Tableau de bord', 'tableau', ep == 'admin_tableau_de_bord'),
+    (url_for('admin_membres'), 'Membres', 'membres', ep.startswith('admin_membre')),
+    (url_for('admin_abonnements'), 'Abonnements', 'carte', ep.startswith('admin_abonnement') and not expirant),
+    (url_for('admin_abonnements', filtre='expirant'), 'Renouvellements', 'renouveler', ep == 'admin_abonnements' and expirant),
+    (url_for('admin_cours'), 'Planning', 'calendrier', ep.startswith('admin_cours') or ep == 'admin_seance'),
+    (url_for('admin_statistiques'), 'Statistiques', 'graphique', ep == 'admin_statistiques')] %}
+{% set items_membre = [
+    (url_for('espace_membre'), 'Tableau de bord', 'tableau', ep == 'espace_membre'),
+    (url_for('membre_abonnement'), 'Mon abonnement', 'carte', ep == 'membre_abonnement'),
+    (url_for('membre_reservations'), 'Réservations', 'calendrier', ep == 'membre_reservations'),
+    (url_for('planning'), 'Planning', 'horloge', False)] %}
+<div class="mise-en-page-app">
+    <aside class="menu-lateral">
+        <nav aria-label="{{ 'Menu du gérant' if est_admin else 'Menu du membre' }}">
+            <ul class="menu-liste">
+                {% for url, libelle, ic, actif in (items_admin if est_admin else items_membre) %}
+                <li><a class="menu-lien{% if actif %} actif{% endif %}" href="{{ url }}"{% if actif %} aria-current="page"{% endif %}>{{ icone(ic, 20) }}<span>{{ libelle }}</span></a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+        <a class="menu-lien menu-retour" href="{{ url_for('accueil') }}">{{ icone('accueil', 20) }}<span>Retour au site</span></a>
+    </aside>
+    <main id="contenu" class="zone-app">
+        {% include "_messages.html" %}
+        {% block contenu %}{% endblock %}
+    </main>
+</div>
+{% endblock %}
+
+{% block pied %}{% endblock %}
+{% block navigation_mobile %}{% endblock %}

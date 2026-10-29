@@ -1,0 +1,23 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+
+{% block titre %}{{ titre }}{% endblock %}
+
+{% block contenu %}
+<div class="entete-page"><h1>{{ titre }}</h1></div>
+
+<section class="carte carte-code" aria-labelledby="titre-code">
+    <p class="message message-succes">{{ message }}</p>
+    <h2 id="titre-code">Identifiants à remettre au membre</h2>
+    <dl class="liste-definitions">
+        <div><dt>Membre</dt><dd>{{ membre.nom }}</dd></div>
+        <div><dt>Téléphone (identifiant)</dt><dd>{{ membre.telephone }}</dd></div>
+        <div><dt>Code d’accès</dt><dd><code class="code-acces">{{ membre.code }}</code></dd></div>
+    </dl>
+    <p class="avis avis-alerte">{{ icone('alerte', 18) }}<span>Ce code ne sera plus jamais affiché : seule son empreinte est conservée. Si le membre l’oublie, générez-en un nouveau.</span></p>
+    <div class="actions-formulaire">
+        <a class="bouton bouton-primaire" href="{{ url_for('admin_abonnement_nouveau', membre_id=membre.id) }}">Enregistrer un abonnement</a>
+        <a class="bouton bouton-contour" href="{{ url_for('admin_membres') }}">Retour aux membres</a>
+    </div>
+</section>
+{% endblock %}

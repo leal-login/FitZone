@@ -1,0 +1,30 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+
+{% block titre %}Nouveau membre{% endblock %}
+
+{% block contenu %}
+<div class="entete-page"><h1>Nouveau membre</h1></div>
+{% if erreur %}<p class="message message-erreur" role="alert">{{ erreur }}</p>{% endif %}
+
+<section class="carte carte-formulaire" aria-labelledby="titre-form">
+    <h2 id="titre-form">Informations du membre</h2>
+    <form method="post" action="{{ url_for('admin_membre_nouveau') }}">
+        <input type="hidden" name="csrf_token" value="{{ jeton_csrf() }}">
+        <div class="champ">
+            <label for="nom">Nom complet</label>
+            <input type="text" id="nom" name="nom" value="{{ nom }}" required minlength="2" maxlength="80" autocomplete="off">
+        </div>
+        <div class="champ">
+            <label for="telephone">Téléphone</label>
+            <input type="tel" id="telephone" name="telephone" value="{{ telephone }}" inputmode="tel" required autocomplete="off" aria-describedby="aide-tel">
+            <p class="aide" id="aide-tel">9 chiffres commençant par 6. Il servira d’identifiant de connexion.</p>
+        </div>
+        <p class="avis avis-info">{{ icone('cle', 18) }}<span>Un code d’accès sera généré. Il ne sera affiché qu’une seule fois : notez-le pour le remettre au membre.</span></p>
+        <div class="actions-formulaire">
+            <button type="submit" class="bouton bouton-primaire">Enregistrer le membre</button>
+            <a class="bouton bouton-contour" href="{{ url_for('admin_membres') }}">Annuler</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

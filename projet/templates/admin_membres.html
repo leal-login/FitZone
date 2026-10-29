@@ -1,0 +1,54 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+{% from "_composants.html" import badge %}
+
+{% block titre %}Membres{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <h1>Membres</h1>
+    <a class="bouton bouton-primaire" href="{{ url_for('admin_membre_nouveau') }}">{{ icone('plus', 18) }} Nouveau membre</a>
+</div>
+
+<form class="recherche" method="get" action="{{ url_for('admin_membres') }}" role="search">
+    <label class="visuellement-cache" for="q">Rechercher un membre par nom ou téléphone</label>
+    <span class="recherche-icone">{{ icone('recherche', 18) }}</span>
+    <input type="search" id="q" name="q" value="{{ recherche }}" placeholder="Nom ou téléphone" maxlength="50">
+    <button type="submit" class="bouton bouton-secondaire bouton-petit">Rechercher</button>
+</form>
+
+<section class="carte" aria-label="Liste des membres">
+    {% if membres %}
+    <div class="tableau-conteneur">
+        <table class="tableau tableau-empile">
+            <thead><tr><th scope="col">Membre</th><th scope="col">Téléphone</th><th scope="col">Inscrit le</th><th scope="col">Abonnement</th><th scope="col">Fin du dernier</th><th scope="col"><span class="visuellement-cache">Actions</span></th></tr></thead>
+            <tbody>
+                {% for m in membres %}
+                <tr>
+                    <th scope="row" data-label="Membre"><span class="cellule-avatar"><span class="avatar avatar-petit" aria-hidden="true">{{ m.nom|initiales }}</span>{{ m.nom }}</span></th>
+                    <td data-label="Téléphone">{{ m.telephone }}</td>
+                    <td data-label="Inscrit le">{{ m.date_inscription|date_fr }}</td>
+                    <td data-label="Abonnement">{% if m.actif %}{{ badge('Actif', 'succes') }}{% else %}{{ badge('Inactif', 'neutre') }}{% endif %}</td>
+                    <td data-label="Fin du dernier">{% if m.derniere_fin %}{{ m.derniere_fin|date_fr }}{% else %}Aucun{% endif %}</td>
+                    <td data-label="Actions">
+                        <div class="actions-ligne">
+                            <a class="bouton bouton-primaire bouton-petit" href="{{ url_for('admin_abonnement_nouveau', membre_id=m.id) }}">Abonnement</a>
+                            <form method="post" action="{{ url_for('admin_membre_code', membre_id=m.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ jeton_csrf() }}">
+                                <button type="submit" class="bouton bouton-contour bouton-petit" data-confirmer="Générer un nouveau code d’accès pour {{ m.nom }} ? L’ancien code ne fonctionnera plus.">Nouveau code</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="carte-pied compteur-resultats">{{ membres|length }} membre{{ 's' if membres|length > 1 }}</p>
+    {% else %}
+    <p class="etat-vide">{% if recherche %}Aucun membre ne correspond à « {{ recherche }} ».{% else %}Aucun membre enregistré.{% endif %}</p>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>{% endblock %}

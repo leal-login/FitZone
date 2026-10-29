@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_icones.html" import icone %}
+
+{% block titre %}Planning{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <h1>Planning hebdomadaire des cours</h1>
+    <div class="semaine-nav">
+        <button type="button" class="bouton-icone" id="semaine-precedente" aria-label="Semaine précédente" disabled>{{ icone('gauche', 20) }}</button>
+        <p class="semaine-libelle" id="libelle-semaine" aria-live="polite">Chargement…</p>
+        <button type="button" class="bouton-icone" id="semaine-suivante" aria-label="Semaine suivante">{{ icone('droite', 20) }}</button>
+    </div>
+</div>
+
+<div id="planning"
+     data-api="{{ url_for('api_planning') }}"
+     {% if g.membre %}data-membre="oui" data-csrf="{{ jeton_csrf() }}" data-reserver="{{ url_for('reserver') }}" data-annuler="{{ url_for('annuler', reservation_id=0) }}"{% endif %}>
+    <div class="pilules" id="jours" role="group" aria-label="Choisir un jour"></div>
+
+    {% if not g.membre %}
+    <p class="avis avis-info">{{ icone('info', 18) }}<span><a href="{{ url_for('connexion') }}">Connectez-vous</a> avec votre compte membre pour réserver une place.</span></p>
+    {% endif %}
+
+    <div id="seances" class="tableau-conteneur" aria-live="polite" aria-busy="true">
+        <p class="etat-vide">Chargement du planning…</p>
+    </div>
+</div>
+<noscript><p class="etat-vide">Le planning s’affiche avec JavaScript. Activez-le dans votre navigateur pour voir les séances.</p></noscript>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/planning.js') }}" defer></script>
+{% endblock %}

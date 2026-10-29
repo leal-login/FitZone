@@ -1,0 +1,49 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+{% from "_composants.html" import badge, statut_places %}
+
+{% block titre %}Inscrits à la séance{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div>
+        <h1>Inscrits à la séance</h1>
+        <p class="sous-titre"><span class="cours-nom"><span class="point disc-{{ cours.discipline|slug }}"></span><strong>{{ cours.discipline }}</strong></span> avec {{ cours.coach }}, {{ cours.salle }} · {{ jour|jour_fr }} à {{ cours.heure }}</p>
+    </div>
+    <a class="bouton bouton-contour" href="{{ url_for('admin_cours') }}">{{ icone('gauche', 16) }} Retour au planning</a>
+</div>
+
+<div class="onglets onglets-gauche" role="group" aria-label="Choisir une séance de ce cours">
+    {% for d in dates %}
+    <a class="onglet{% if d == jour %} actif{% endif %}" href="{{ url_for('admin_seance', cours_id=cours.id, date=d) }}"{% if d == jour %} aria-current="page"{% endif %}>{{ d|jour_fr }}</a>
+    {% endfor %}
+</div>
+
+<ul class="grille-stats">
+    <li class="stat"><span class="stat-icone stat-violet">{{ icone('membres', 22) }}</span><span class="stat-valeur">{{ places_prises }}/{{ cours.places_max }}</span><span class="stat-libelle">Places prises</span></li>
+    <li class="stat"><span class="stat-icone stat-vert">{{ icone('valide', 22) }}</span><span class="stat-valeur">{{ places_restantes }}</span><span class="stat-libelle">Places restantes</span></li>
+    <li class="stat"><span class="stat-icone stat-bleu">{{ icone('horloge', 22) }}</span><span class="stat-valeur stat-valeur-petit">{% if passee %}Séance passée{% else %}{{ statut_places(places_prises, cours.places_max) }}{% endif %}</span><span class="stat-libelle">Statut</span></li>
+</ul>
+
+<section class="carte" aria-label="Liste des inscrits">
+    {% if inscrits %}
+    <div class="tableau-conteneur">
+        <table class="tableau tableau-empile">
+            <thead><tr><th scope="col">N°</th><th scope="col">Membre</th><th scope="col">Téléphone</th><th scope="col">Réservé le</th></tr></thead>
+            <tbody>
+                {% for i in inscrits %}
+                <tr>
+                    <td data-label="N°">{{ loop.index }}</td>
+                    <th scope="row" data-label="Membre"><span class="cellule-avatar"><span class="avatar avatar-petit" aria-hidden="true">{{ i.nom|initiales }}</span>{{ i.nom }}</span></th>
+                    <td data-label="Téléphone">{{ i.telephone }}</td>
+                    <td data-label="Réservé le">{{ i.date_reservation }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="etat-vide">Aucun inscrit pour cette séance.</p>
+    {% endif %}
+</section>
+{% endblock %}

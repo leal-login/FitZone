@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_icones.html" import icone %}
+{% from "_composants.html" import carte_formule %}
+
+{% block titre %}Salle de sport à Yaoundé{% endblock %}
+
+{% block corps %}
+<main id="contenu">
+    <section class="hero" aria-labelledby="titre-hero">
+        <div class="conteneur hero-contenu">
+            <p class="hero-etiquette">Salle de sport à <span>Yaoundé</span></p>
+            <h1 id="titre-hero">Votre forme,<br>notre priorité</h1>
+            {% if disciplines %}<p class="hero-disciplines">{{ disciplines|join(" · ") }}</p>{% endif %}
+            <div class="hero-actions">
+                <a class="bouton bouton-primaire" href="#formules">Découvrir nos formules</a>
+                <a class="bouton bouton-contour-clair" href="{{ url_for('planning') }}">Voir le planning</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="conteneur">
+        {% include "_messages.html" %}
+
+        <ul class="atouts">
+            <li>{{ icone('medaille', 28) }}<span>Coachs qualifiés<br>et passionnés</span></li>
+            <li>{{ icone('bouclier', 28) }}<span>Équipements modernes<br>et sécurisés</span></li>
+            <li>{{ icone('sourire', 28) }}<span>Un espace convivial<br>et motivant</span></li>
+            <li>{{ icone('progres', 28) }}<span>Suivi de votre abonnement<br>en ligne</span></li>
+        </ul>
+
+        <section id="formules" class="section" aria-labelledby="titre-formules">
+            <h2 id="titre-formules">Nos formules d’abonnement</h2>
+            <p class="sous-titre">Choisissez la formule qui correspond à vos objectifs.</p>
+            <div class="grille-formules">
+                {% for f in formules %}{{ carte_formule(f) }}{% endfor %}
+            </div>
+        </section>
+
+        <section id="comment-sabonner" class="section" aria-labelledby="titre-abonner">
+            <h2 id="titre-abonner">Comment s’abonner ?</h2>
+            <ol class="etapes">
+                <li><span class="etape-numero">1</span><div><strong>Passez à l’accueil</strong><p>Rendez-vous à la salle et choisissez votre formule.</p></div></li>
+                <li><span class="etape-numero">2</span><div><strong>Recevez votre code</strong><p>Le gérant enregistre votre abonnement et vous remet votre code d’accès.</p></div></li>
+                <li><span class="etape-numero">3</span><div><strong>Connectez-vous</strong><p>Suivez vos jours restants depuis votre espace membre.</p></div></li>
+                <li><span class="etape-numero">4</span><div><strong>Réservez vos cours</strong><p>Choisissez vos séances dans le planning, en quelques clics.</p></div></li>
+            </ol>
+        </section>
+    </div>
+
+    <section class="banniere-cours" aria-labelledby="titre-cours">
+        <div class="conteneur banniere-contenu">
+            <h2 id="titre-cours">Des cours collectifs pour tous</h2>
+            <p>Zumba, aérobic, taekwondo, musculation encadrée : réservez votre place avant que le cours ne soit complet.</p>
+            <a class="bouton bouton-primaire" href="{{ url_for('planning') }}">Voir le planning</a>
+        </div>
+    </section>
+</main>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "_icones.html" import icone, logo %}
+
+{% block titre %}{% if mode == "admin" %}Connexion gérant{% else %}Connexion{% endif %}{% endblock %}
+{% block classe_corps %}page-connexion{% endblock %}
+{% block entete %}{% endblock %}
+{% block pied %}{% endblock %}
+{% block navigation_mobile %}{% endblock %}
+
+{% block corps %}
+<div class="connexion">
+    <section class="connexion-visuel" aria-label="Présentation de FitZone">
+        <div class="connexion-visuel-contenu">
+            <h2>Rejoignez FitZone</h2>
+            <p>Ensemble vers une meilleure version de vous-même.</p>
+            <ul class="connexion-liste">
+                <li><span class="rond-icone">{{ icone('calendrier', 22) }}</span>Accès aux cours collectifs</li>
+                <li><span class="rond-icone">{{ icone('carte', 22) }}</span>Suivi de votre abonnement</li>
+                <li><span class="rond-icone">{{ icone('valide', 22) }}</span>Réservation en ligne</li>
+                <li><span class="rond-icone">{{ icone('graphique', 22) }}</span>Statistiques et progression</li>
+            </ul>
+        </div>
+    </section>
+
+    <main id="contenu" class="connexion-formulaire">
+        <div class="connexion-carte">
+            <a class="logo-lien logo-centre" href="{{ url_for('accueil') }}" aria-label="FitZone, retour à l’accueil">{{ logo(44) }}<span class="logo-texte">FitZone</span></a>
+            <h1>{% if mode == "admin" %}Espace gérant{% else %}Connexion{% endif %}</h1>
+            <p class="sous-titre centre">{% if mode == "admin" %}Gérez abonnements, planning et statistiques.{% else %}Accédez à votre espace personnel.{% endif %}</p>
+
+            <div class="onglets" role="group" aria-label="Type de compte">
+                <a class="onglet{% if mode != 'admin' %} actif{% endif %}" href="{{ url_for('connexion') }}"{% if mode != 'admin' %} aria-current="page"{% endif %}>Membre</a>
+                <a class="onglet{% if mode == 'admin' %} actif{% endif %}" href="{{ url_for('admin_connexion') }}"{% if mode == 'admin' %} aria-current="page"{% endif %}>Administrateur</a>
+            </div>
+
+            {% include "_messages.html" %}
+            {% if erreur %}<p class="message message-erreur" role="alert">{{ erreur }}</p>{% endif %}
+
+            <form method="post" data-verification="{{ mode }}" action="{{ url_for('admin_connexion' if mode == 'admin' else 'connexion') }}">
+                <input type="hidden" name="csrf_token" value="{{ jeton_csrf() }}">
+                {% if mode == "admin" %}
+                <div class="champ">
+                    <label for="login">Identifiant</label>
+                    <input type="text" id="login" name="login" value="{{ login }}" autocomplete="username" required aria-describedby="erreur-login">
+                    <p class="erreur-champ" id="erreur-login" hidden></p>
+                </div>
+                <div class="champ">
+                    <label for="mot_de_passe">Mot de passe</label>
+                    <div class="champ-mdp">
+                        <input type="password" id="mot_de_passe" name="mot_de_passe" autocomplete="current-password" required aria-describedby="erreur-mot_de_passe">
+                        <button type="button" class="bascule-mdp" data-bascule="mot_de_passe" aria-label="Afficher le mot de passe" aria-pressed="false" hidden>{{ icone('oeil', 18) }}</button>
+                    </div>
+                    <p class="erreur-champ" id="erreur-mot_de_passe" hidden></p>
+                </div>
+                {% else %}
+                <div class="champ">
+                    <label for="telephone">Numéro de téléphone</label>
+                    <input type="tel" id="telephone" name="telephone" value="{{ telephone }}" autocomplete="username" inputmode="tel" required aria-describedby="aide-telephone erreur-telephone">
+                    <p class="aide" id="aide-telephone">9 chiffres commençant par 6, par exemple 677 00 00 01.</p>
+                    <p class="erreur-champ" id="erreur-telephone" hidden></p>
+                </div>
+                <div class="champ">
+                    <label for="code">Code d’accès</label>
+                    <div class="champ-mdp">
+                        <input type="password" id="code" name="code" autocomplete="current-password" required aria-describedby="aide-code erreur-code">
+                        <button type="button" class="bascule-mdp" data-bascule="code" aria-label="Afficher le code" aria-pressed="false" hidden>{{ icone('oeil', 18) }}</button>
+                    </div>
+                    <p class="aide" id="aide-code">Code remis à l’accueil de la salle. Code oublié ? Demandez-en un nouveau au gérant.</p>
+                    <p class="erreur-champ" id="erreur-code" hidden></p>
+                </div>
+                {% endif %}
+                <button type="submit" class="bouton bouton-primaire bouton-bloc">Se connecter</button>
+            </form>
+
+            <p class="centre connexion-pied">
+                {% if mode == "admin" %}Vous êtes membre ? <a href="{{ url_for('connexion') }}">Connexion membre</a>
+                {% else %}Pas encore membre ? <a href="{{ url_for('accueil') }}#comment-sabonner">Découvrez comment s’abonner</a>{% endif %}
+            </p>
+            <p class="centre"><a href="{{ url_for('accueil') }}">Retour à l’accueil</a></p>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/verif.js') }}" defer></script>
+{% endblock %}

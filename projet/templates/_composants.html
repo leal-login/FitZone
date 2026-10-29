@@ -1,0 +1,31 @@
+{#- Petits composants réutilisés dans plusieurs pages. -#}
+{% macro badge(texte, type="neutre") -%}
+<span class="badge badge-{{ type }}">{{ texte }}</span>
+{%- endmacro %}
+
+{% macro progression(pourcentage) -%}
+<div class="progression" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ pourcentage }}" aria-label="Progression de l’abonnement" data-progression>
+    <div class="progression-barre" style="width: {{ pourcentage }}%"></div>
+</div>
+{%- endmacro %}
+
+{% macro restants(jours) -%}
+{% if jours == 0 %}Dernier jour{% elif jours == 1 %}1 jour restant{% else %}{{ jours }} jours restants{% endif %}
+{%- endmacro %}
+
+{#- Statut d'une séance d'après les places prises : Disponible, Dernières places ou Complet. -#}
+{% macro statut_places(prises, maximum) -%}
+{% if prises >= maximum %}<span class="badge badge-erreur">Complet</span>
+{%- elif maximum - prises <= 3 %}<span class="badge badge-alerte">Dernières places</span>
+{%- else %}<span class="badge badge-succes">Disponible</span>{% endif %}
+{%- endmacro %}
+
+{% macro carte_formule(f) -%}
+<article class="carte-formule{% if f.populaire %} carte-formule-populaire{% endif %}">
+    {% if f.populaire %}<span class="ruban">Populaire</span>{% endif %}
+    <h3>{{ f.nom }}</h3>
+    <p class="prix">{{ f.prix|fcfa }}</p>
+    <p class="formule-detail">Valable {{ f.duree_jours|duree }}{% if f.prix_par_jour %}, soit {{ f.prix_par_jour|fcfa }} par jour{% endif %}</p>
+    <a class="bouton {{ 'bouton-primaire' if f.populaire else 'bouton-contour' }} bouton-bloc" href="{{ url_for('accueil') }}#comment-sabonner">Je m’abonne</a>
+</article>
+{%- endmacro %}

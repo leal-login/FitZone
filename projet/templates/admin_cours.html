@@ -1,0 +1,49 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+
+{% block titre %}Planning des cours{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <h1>Planning des cours</h1>
+    <a class="bouton bouton-primaire" href="{{ url_for('admin_cours_nouveau') }}">{{ icone('plus', 18) }} Nouveau cours</a>
+</div>
+
+<section class="carte" aria-label="Cours hebdomadaires">
+    {% if cours %}
+    <div class="tableau-conteneur">
+        <table class="tableau tableau-empile">
+            <thead><tr><th scope="col">Jour</th><th scope="col">Heure</th><th scope="col">Cours</th><th scope="col">Coach</th><th scope="col">Salle</th><th scope="col" class="colonne-nombre">Places</th><th scope="col" class="colonne-nombre">Réservations à venir</th><th scope="col"><span class="visuellement-cache">Actions</span></th></tr></thead>
+            <tbody>
+                {% for c in cours %}
+                <tr>
+                    <th scope="row" data-label="Jour">{{ c.jour_nom }}</th>
+                    <td data-label="Heure">{{ c.heure }}</td>
+                    <td data-label="Cours"><span class="cours-nom"><span class="point disc-{{ c.discipline|slug }}"></span>{{ c.discipline }}</span></td>
+                    <td data-label="Coach">{{ c.coach }}</td>
+                    <td data-label="Salle">{{ c.salle }}</td>
+                    <td data-label="Places" class="colonne-nombre">{{ c.places_max }}</td>
+                    <td data-label="Réservations à venir" class="colonne-nombre">{{ c.reservations_a_venir }}</td>
+                    <td data-label="Actions">
+                        <div class="actions-ligne">
+                            <a class="bouton bouton-secondaire bouton-petit" href="{{ url_for('admin_seance', cours_id=c.id, date=c.prochaine_seance) }}">Inscrits</a>
+                            <a class="bouton bouton-contour bouton-petit" href="{{ url_for('admin_cours_modifier', cours_id=c.id) }}">Modifier</a>
+                            <form method="post" action="{{ url_for('admin_cours_supprimer', cours_id=c.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ jeton_csrf() }}">
+                                <button type="submit" class="bouton bouton-danger bouton-petit" data-confirmer="Supprimer le cours {{ c.discipline }} du {{ c.jour_nom|lower }} à {{ c.heure }} ?">Supprimer</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="etat-vide">Aucun cours au planning. <a href="{{ url_for('admin_cours_nouveau') }}">Ajoutez le premier cours</a>.</p>
+    {% endif %}
+</section>
+<p class="avis avis-info">{{ icone('info', 18) }}<span>Un cours qui a déjà reçu des réservations ne peut pas être supprimé, et son jour et son heure ne peuvent plus changer tant que des réservations sont à venir.</span></p>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>{% endblock %}

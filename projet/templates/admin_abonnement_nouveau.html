@@ -1,0 +1,56 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+
+{% block titre %}Nouvel abonnement{% endblock %}
+
+{% block contenu %}
+<div class="entete-page"><h1>Enregistrer un abonnement ou un renouvellement</h1></div>
+
+{% if erreur %}<p class="message message-erreur" role="alert">{{ erreur }}</p>{% endif %}
+
+<div class="deux-colonnes">
+    <section class="carte" aria-labelledby="titre-form">
+        <h2 id="titre-form">Informations</h2>
+        <form method="post" action="{{ url_for('admin_abonnement_nouveau') }}" id="form-abonnement">
+            <input type="hidden" name="csrf_token" value="{{ jeton_csrf() }}">
+            <div class="champ">
+                <label for="membre_id">Membre</label>
+                <select id="membre_id" name="membre_id" required>
+                    <option value="">Choisir un membre</option>
+                    {% for m in membres %}<option value="{{ m.id }}"{% if valeurs.membre_id == m.id|string %} selected{% endif %}>{{ m.nom }} ({{ m.telephone }})</option>{% endfor %}
+                </select>
+            </div>
+            <div class="champ">
+                <label for="formule_id">Formule</label>
+                <select id="formule_id" name="formule_id" required>
+                    <option value="">Choisir une formule</option>
+                    {% for f in formules %}<option value="{{ f.id }}"{% if valeurs.formule_id == f.id|string %} selected{% endif %}>{{ f.nom }} ({{ f.duree_jours|duree }}, {{ f.prix|fcfa }})</option>{% endfor %}
+                </select>
+            </div>
+            <div class="champ">
+                <label for="date_debut">Date de début (facultatif)</label>
+                <input type="date" id="date_debut" name="date_debut" value="{{ valeurs.date_debut }}" aria-describedby="aide-debut">
+                <p class="aide" id="aide-debut">Laissez vide : l’abonnement commence aujourd’hui, ou le lendemain de la fin de l’abonnement actuel du membre.</p>
+            </div>
+            <div class="champ">
+                <label for="montant">Montant payé en FCFA (facultatif)</label>
+                <input type="text" id="montant" name="montant" value="{{ valeurs.montant }}" inputmode="numeric" autocomplete="off" aria-describedby="aide-montant">
+                <p class="aide" id="aide-montant">Laissez vide pour le prix de la formule. Saisissez un nombre entier en cas de remise.</p>
+            </div>
+            <div class="actions-formulaire">
+                <button type="submit" class="bouton bouton-primaire">Enregistrer</button>
+                <a class="bouton bouton-contour" href="{{ url_for('admin_abonnements') }}">Annuler</a>
+            </div>
+        </form>
+    </section>
+
+    <aside class="carte carte-apercu" aria-labelledby="titre-apercu">
+        <h2 id="titre-apercu">Aperçu</h2>
+        <div id="apercu" data-api="{{ url_for('api_admin_abonnement_apercu') }}" aria-live="polite">
+            <p class="etat-vide">Choisissez un membre et une formule pour voir les dates calculées.</p>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/apercu.js') }}" defer></script>{% endblock %}

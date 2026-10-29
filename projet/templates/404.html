@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block titre %}Page introuvable{% endblock %}
+
+{% block contenu %}
+<section class="page-erreur">
+    <p class="erreur-code">404</p>
+    <h1>Page introuvable</h1>
+    <p class="sous-titre">L’adresse demandée n’existe pas ou a changé. Revenez au planning pour retrouver les cours.</p>
+    <p><a class="bouton bouton-primaire" href="{{ url_for('planning') }}">Voir le planning</a></p>
+</section>
+{% endblock %}

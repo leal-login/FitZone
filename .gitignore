@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+projet/projet.db
+.vscode/
+*.mp4

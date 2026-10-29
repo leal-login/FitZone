@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_composants.html" import carte_formule %}
+
+{% block titre %}Formules{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div>
+        <h1>Nos formules d’abonnement</h1>
+        <p class="sous-titre">Choisissez la durée qui vous convient. L’abonnement est enregistré à l’accueil de la salle.</p>
+    </div>
+</div>
+{% if formules %}
+<div class="grille-formules">
+    {% for f in formules %}{{ carte_formule(f) }}{% endfor %}
+</div>
+{% else %}
+<p class="etat-vide">Aucune formule n’est proposée pour le moment.</p>
+{% endif %}
+{% endblock %}

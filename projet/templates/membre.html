@@ -1,0 +1,86 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+{% from "_composants.html" import badge, progression, restants, statut_places %}
+
+{% block titre %}Tableau de bord{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div class="bienvenue">
+        <span class="avatar" aria-hidden="true">{{ g.membre["nom"]|initiales }}</span>
+        <div>
+            <h1>Bonjour, {{ g.membre["nom"]|prenom }}</h1>
+            <p class="sous-titre">Membre depuis le {{ membre_depuis|date_fr }}</p>
+        </div>
+    </div>
+</div>
+
+<section class="carte carte-abonnement" aria-labelledby="titre-abonnement">
+    {% if abonnement.etat == "en_cours" %}
+    <div class="abonnement-resume">
+        <div class="abonnement-texte">
+            <h2 id="titre-abonnement">Mon abonnement</h2>
+            <p class="abonnement-formule">Formule {{ abonnement.formule }}</p>
+            <p class="sous-titre">Du {{ abonnement.date_debut|date_fr }} au {{ abonnement.date_fin|date_fr }}</p>
+        </div>
+        <div class="abonnement-jours">
+            <p class="jours-valeur">{{ restants(abonnement.jours_restants) }}</p>
+            <a class="bouton bouton-primaire bouton-petit" href="{{ url_for('membre_abonnement') }}">Voir les détails</a>
+        </div>
+    </div>
+    {{ progression(abonnement.progression) }}
+    <p class="progression-legende">Jour {{ abonnement.jours_consommes }} sur {{ abonnement.duree_jours }} ({{ abonnement.progression }} %)</p>
+    {% if abonnement.jours_restants <= 7 %}
+    <p class="avis avis-alerte">{{ icone('alerte', 18) }}<span>Votre abonnement se termine bientôt. Pensez à le renouveler à l’accueil de la salle.</span></p>
+    {% endif %}
+
+    {% elif abonnement.etat == "a_venir" %}
+    <h2 id="titre-abonnement">Mon abonnement</h2>
+    <p class="abonnement-formule">Formule {{ abonnement.formule }}</p>
+    <p class="sous-titre">Il commence le {{ abonnement.date_debut|date_fr }} et se termine le {{ abonnement.date_fin|date_fr }}. Vous pourrez réserver à partir de cette date.</p>
+
+    {% elif abonnement.etat == "expire" %}
+    <h2 id="titre-abonnement">Mon abonnement</h2>
+    <p class="avis avis-alerte">{{ icone('alerte', 18) }}<span>Votre abonnement {{ abonnement.formule }} a pris fin le {{ abonnement.date_fin|date_fr }}. Renouvelez-le à l’accueil de la salle pour réserver de nouveau des cours.</span></p>
+
+    {% else %}
+    <h2 id="titre-abonnement">Mon abonnement</h2>
+    <p class="sous-titre">Vous n’avez pas encore d’abonnement. Rendez-vous à l’accueil de la salle pour en choisir un parmi les <a href="{{ url_for('formules') }}">formules</a>.</p>
+    {% endif %}
+</section>
+
+<ul class="grille-stats">
+    <li class="stat"><span class="stat-icone stat-violet">{{ icone('calendrier', 22) }}</span><span class="stat-valeur">{{ resume.a_venir }}</span><span class="stat-libelle">Réservations à venir</span></li>
+    <li class="stat"><span class="stat-icone stat-bleu">{{ icone('horloge', 22) }}</span><span class="stat-valeur">{{ resume.cette_semaine }}</span><span class="stat-libelle">Cours cette semaine</span></li>
+    <li class="stat"><span class="stat-icone stat-vert">{{ icone('valide', 22) }}</span><span class="stat-valeur">{{ resume.passees }}</span><span class="stat-libelle">Séances suivies</span></li>
+</ul>
+
+<section class="carte" aria-labelledby="titre-prochaines">
+    <div class="carte-entete">
+        <h2 id="titre-prochaines">Prochaines séances</h2>
+        <a class="lien-fleche" href="{{ url_for('membre_reservations') }}">Voir tout {{ icone('droite', 16) }}</a>
+    </div>
+    {% if prochaines %}
+    <ul class="liste-reservations">
+        {% for r in prochaines %}
+        <li class="reservation-ligne">
+            <span class="pastille-cours disc-{{ r.discipline|slug }}">{{ icone('halteres', 20) }}</span>
+            <div class="reservation-info">
+                <strong>{{ r.discipline }}</strong>
+                <span>{{ r.date_seance|jour_fr }} · {{ r.heure }}</span>
+                <span>{{ r.salle }} · {{ r.coach }}</span>
+            </div>
+            <span class="reservation-places" title="Places prises sur places maximales">{{ r.places_prises }}/{{ r.places_max }}</span>
+            {{ statut_places(r.places_prises, r.places_max) }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="etat-vide">Aucune séance réservée. <a href="{{ url_for('planning') }}">Choisissez un cours dans le planning</a>.</p>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if abonnement.etat == "en_cours" %}<script src="{{ url_for('static', filename='js/abonnement.js') }}" defer data-api="{{ url_for('api_abonnement') }}"></script>{% endif %}
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+
+{% block titre %}{% if mode == "modifier" %}Modifier un cours{% else %}Nouveau cours{% endif %}{% endblock %}
+
+{% block contenu %}
+<div class="entete-page"><h1>{% if mode == "modifier" %}Modifier le cours{% else %}Nouveau cours{% endif %}</h1></div>
+{% if erreur %}<p class="message message-erreur" role="alert">{{ erreur }}</p>{% endif %}
+
+<section class="carte carte-formulaire" aria-labelledby="titre-form">
+    <h2 id="titre-form">Détails du cours</h2>
+    <form method="post" action="{{ url_for('admin_cours_modifier', cours_id=cours_id) if mode == 'modifier' else url_for('admin_cours_nouveau') }}">
+        <input type="hidden" name="csrf_token" value="{{ jeton_csrf() }}">
+        <div class="grille-formulaire">
+            <div class="champ">
+                <label for="discipline">Discipline</label>
+                <input type="text" id="discipline" name="discipline" value="{{ valeurs.discipline }}" list="disciplines" required minlength="2" maxlength="40" autocomplete="off">
+                <datalist id="disciplines"><option value="Musculation"><option value="Aérobic"><option value="Taekwondo"><option value="Zumba"></datalist>
+            </div>
+            <div class="champ">
+                <label for="coach">Coach</label>
+                <input type="text" id="coach" name="coach" value="{{ valeurs.coach }}" required minlength="2" maxlength="60" autocomplete="off">
+            </div>
+            <div class="champ">
+                <label for="jour_semaine">Jour</label>
+                <select id="jour_semaine" name="jour_semaine" required>
+                    <option value="">Choisir un jour</option>
+                    {% for numero, nom in jours %}<option value="{{ numero }}"{% if valeurs.jour_semaine == numero|string %} selected{% endif %}>{{ nom }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="champ">
+                <label for="heure">Heure de début</label>
+                <input type="time" id="heure" name="heure" value="{{ valeurs.heure }}" required>
+            </div>
+            <div class="champ">
+                <label for="salle">Salle</label>
+                <input type="text" id="salle" name="salle" value="{{ valeurs.salle }}" required maxlength="30" autocomplete="off">
+            </div>
+            <div class="champ">
+                <label for="places_max">Places maximales</label>
+                <input type="number" id="places_max" name="places_max" value="{{ valeurs.places_max }}" required min="1" max="200" inputmode="numeric">
+            </div>
+        </div>
+        <div class="actions-formulaire">
+            <button type="submit" class="bouton bouton-primaire">{% if mode == "modifier" %}Enregistrer les modifications{% else %}Ajouter le cours{% endif %}</button>
+            <a class="bouton bouton-contour" href="{{ url_for('admin_cours') }}">Annuler</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% from "_icones.html" import icone, logo %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#7C3AED">
+    <title>{% block titre %}Accueil{% endblock %} – FitZone</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% block classe_corps %}{% endblock %}">
+    <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+    {% block entete %}
+    <header class="barre">
+        <div class="conteneur barre-contenu">
+            <a class="logo-lien" href="{{ url_for('accueil') }}" aria-label="FitZone, retour à l’accueil">
+                {{ logo(36) }}<span class="logo-texte">FitZone</span>
+            </a>
+            <nav class="navigation-principale" aria-label="Navigation principale">
+                <a href="{{ url_for('accueil') }}"{% if request.endpoint == 'accueil' %} aria-current="page"{% endif %}>Accueil</a>
+                <a href="{{ url_for('formules') }}"{% if request.endpoint == 'formules' %} aria-current="page"{% endif %}>Formules</a>
+                <a href="{{ url_for('planning') }}"{% if request.endpoint == 'planning' %} aria-current="page"{% endif %}>Planning</a>
+            </nav>
+            <div class="barre-actions">
+                {% if g.membre %}
+                <a class="bouton bouton-primaire bouton-petit" href="{{ url_for('espace_membre') }}">Mon espace</a>
+                {% elif g.admin %}
+                <a class="bouton bouton-primaire bouton-petit" href="{{ url_for('admin_tableau_de_bord') }}">Administration</a>
+                {% else %}
+                <a class="bouton bouton-primaire bouton-petit" href="{{ url_for('connexion') }}">Se connecter</a>
+                {% endif %}
+                {% if g.membre or g.admin %}
+                <form class="formulaire-en-ligne bureau-seulement" method="post" action="{{ url_for('deconnexion') }}">
+                    <input type="hidden" name="csrf_token" value="{{ jeton_csrf() }}">
+                    <button type="submit" class="bouton-lien">Déconnexion</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    {% endblock %}
+
+    {% block corps %}
+    <main id="contenu" class="conteneur principal">
+        {% include "_messages.html" %}
+        {% block contenu %}{% endblock %}
+    </main>
+    {% endblock %}
+
+    {% block pied %}
+    <footer class="pied">
+        <div class="conteneur pied-contenu">
+            <a class="logo-lien logo-lien-clair" href="{{ url_for('accueil') }}">{{ logo(32) }}<span class="logo-texte">FitZone</span></a>
+            <p>Plus qu’une salle de sport, une communauté.</p>
+            <p class="pied-petit">© 2026 FitZone. Technologies Web. <a href="{{ url_for('admin_connexion') }}">Espace gérant</a></p>
+        </div>
+    </footer>
+    {% endblock %}
+
+    {% block navigation_mobile %}
+    <nav class="navigation-bas" aria-label="Navigation mobile">
+        <a href="{{ url_for('accueil') }}"{% if request.endpoint == 'accueil' %} aria-current="page"{% endif %}>{{ icone('accueil', 22) }}<span>Accueil</span></a>
+        <a href="{{ url_for('formules') }}"{% if request.endpoint == 'formules' %} aria-current="page"{% endif %}>{{ icone('carte', 22) }}<span>Formules</span></a>
+        <a href="{{ url_for('planning') }}"{% if request.endpoint == 'planning' %} aria-current="page"{% endif %}>{{ icone('calendrier', 22) }}<span>Planning</span></a>
+        {% if g.membre %}
+        <a href="{{ url_for('espace_membre') }}">{{ icone('utilisateur', 22) }}<span>Mon espace</span></a>
+        {% elif g.admin %}
+        <a href="{{ url_for('admin_tableau_de_bord') }}">{{ icone('utilisateur', 22) }}<span>Admin</span></a>
+        {% else %}
+        <a href="{{ url_for('connexion') }}"{% if request.endpoint == 'connexion' %} aria-current="page"{% endif %}>{{ icone('utilisateur', 22) }}<span>Compte</span></a>
+        {% endif %}
+    </nav>
+    {% endblock %}
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

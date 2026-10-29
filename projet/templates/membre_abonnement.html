@@ -1,0 +1,61 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+{% from "_composants.html" import badge, progression, restants %}
+
+{% block titre %}Mon abonnement{% endblock %}
+
+{% block contenu %}
+<div class="entete-page"><h1>Mon abonnement</h1></div>
+
+<section class="carte carte-abonnement" aria-labelledby="titre-actuel">
+    <h2 id="titre-actuel">Abonnement actuel</h2>
+    {% if abonnement.etat == "en_cours" %}
+    <div class="abonnement-resume">
+        <div class="abonnement-texte">
+            <p class="abonnement-formule">Formule {{ abonnement.formule }}</p>
+            <p class="sous-titre">Du {{ abonnement.date_debut|date_fr }} au {{ abonnement.date_fin|date_fr }}</p>
+        </div>
+        <p class="jours-valeur">{{ restants(abonnement.jours_restants) }}</p>
+    </div>
+    {{ progression(abonnement.progression) }}
+    <p class="progression-legende">Jour {{ abonnement.jours_consommes }} sur {{ abonnement.duree_jours }} ({{ abonnement.progression }} %)</p>
+    {% if abonnement.jours_restants <= 7 %}
+    <p class="avis avis-alerte">{{ icone('alerte', 18) }}<span>Votre abonnement se termine bientôt. Renouvelez-le à l’accueil de la salle : le nouvel abonnement commencera le lendemain de la fin de celui-ci.</span></p>
+    {% endif %}
+    {% elif abonnement.etat == "a_venir" %}
+    <p class="sous-titre">Votre abonnement {{ abonnement.formule }} commence le {{ abonnement.date_debut|date_fr }}.</p>
+    {% elif abonnement.etat == "expire" %}
+    <p class="avis avis-alerte">{{ icone('alerte', 18) }}<span>Votre dernier abonnement ({{ abonnement.formule }}) a pris fin le {{ abonnement.date_fin|date_fr }}.</span></p>
+    {% else %}
+    <p class="sous-titre">Aucun abonnement pour le moment. Consultez les <a href="{{ url_for('formules') }}">formules</a> et rendez-vous à l’accueil de la salle.</p>
+    {% endif %}
+</section>
+
+<section class="carte" aria-labelledby="titre-historique">
+    <h2 id="titre-historique">Historique de mes abonnements</h2>
+    {% if historique %}
+    <div class="tableau-conteneur">
+        <table class="tableau tableau-empile">
+            <thead><tr><th scope="col">Formule</th><th scope="col">Début</th><th scope="col">Fin</th><th scope="col" class="colonne-nombre">Montant</th><th scope="col">État</th></tr></thead>
+            <tbody>
+                {% for a in historique %}
+                <tr>
+                    <th scope="row" data-label="Formule">{{ a.formule }}</th>
+                    <td data-label="Début">{{ a.date_debut|date_fr }}</td>
+                    <td data-label="Fin">{{ a.date_fin|date_fr }}</td>
+                    <td data-label="Montant" class="colonne-nombre">{{ a.montant_paye|fcfa }}</td>
+                    <td data-label="État">{% if a.etat == 'en_cours' %}{{ badge('En cours', 'succes') }}{% elif a.etat == 'a_venir' %}{{ badge('À venir', 'primaire') }}{% else %}{{ badge('Terminé', 'neutre') }}{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="etat-vide">Aucun abonnement enregistré.</p>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if abonnement.etat == "en_cours" %}<script src="{{ url_for('static', filename='js/abonnement.js') }}" defer data-api="{{ url_for('api_abonnement') }}"></script>{% endif %}
+{% endblock %}

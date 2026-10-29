@@ -1,0 +1,46 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+{% from "_composants.html" import badge %}
+
+{% block titre %}Abonnements{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <h1>Gestion des abonnements</h1>
+    <a class="bouton bouton-primaire" href="{{ url_for('admin_abonnement_nouveau') }}">{{ icone('plus', 18) }} Nouvel abonnement</a>
+</div>
+
+<div class="onglets onglets-gauche" role="group" aria-label="Filtrer les abonnements">
+    {% for code, libelle in [('tous', 'Tous'), ('en_cours', 'En cours'), ('expirant', 'À renouveler sous 7 jours'), ('expires', 'Expirés')] %}
+    <a class="onglet{% if filtre == code %} actif{% endif %}" href="{{ url_for('admin_abonnements', filtre=code) }}"{% if filtre == code %} aria-current="page"{% endif %}>{{ libelle }}{% if code == 'expirant' %} ({{ nombre_expirant }}){% endif %}</a>
+    {% endfor %}
+</div>
+
+<section class="carte" aria-label="Liste des abonnements">
+    {% if abonnements %}
+    <div class="tableau-conteneur">
+        <table class="tableau tableau-empile">
+            <thead><tr><th scope="col">Membre</th><th scope="col">Formule</th><th scope="col">Début</th><th scope="col">Fin</th><th scope="col" class="colonne-nombre">Montant</th><th scope="col">État</th><th scope="col"><span class="visuellement-cache">Action</span></th></tr></thead>
+            <tbody>
+                {% for a in abonnements %}
+                <tr>
+                    <th scope="row" data-label="Membre">{{ a.nom }}<span class="sous-ligne">{{ a.telephone }}</span></th>
+                    <td data-label="Formule">{{ a.formule }}</td>
+                    <td data-label="Début">{{ a.date_debut|date_fr }}</td>
+                    <td data-label="Fin">{{ a.date_fin|date_fr }}</td>
+                    <td data-label="Montant" class="colonne-nombre">{{ a.montant_paye|fcfa }}</td>
+                    <td data-label="État">
+                        {% if a.etat == 'en_cours' %}{{ badge('En cours', 'succes') }}{% elif a.etat == 'a_venir' %}{{ badge('À venir', 'primaire') }}{% else %}{{ badge('Expiré', 'neutre') }}{% endif %}
+                        {% if a.expire_bientot %}{{ badge('Expire bientôt', 'alerte') }}{% endif %}
+                    </td>
+                    <td data-label="Action">{% if a.expire_bientot %}<a class="bouton bouton-primaire bouton-petit" href="{{ url_for('admin_abonnement_nouveau', membre_id=a.membre_id) }}">Renouveler</a>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="etat-vide">Aucun abonnement dans cette catégorie.</p>
+    {% endif %}
+</section>
+{% endblock %}

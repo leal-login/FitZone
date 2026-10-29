@@ -1,0 +1,112 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+
+{% block titre %}Statistiques{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <div>
+        <h1>Statistiques</h1>
+        <p class="sous-titre">Situation au {{ stats.date|date_fr }}</p>
+    </div>
+</div>
+
+<ul class="grille-kpi">
+    <li class="kpi">
+        <span class="stat-icone stat-violet">{{ icone('carte', 22) }}</span>
+        <span class="kpi-valeur kpi-valeur-petit">{% if recette_choisie %}{{ recette_choisie.total|fcfa }}{% else %}0 FCFA{% endif %}</span>
+        <span class="kpi-libelle">Recettes de {% if mois_choisi %}{{ mois_choisi|mois_fr }}{% else %}la période{% endif %}</span>
+        {% if tendance is not none %}<span class="tendance {{ 'tendance-hausse' if tendance >= 0 else 'tendance-baisse' }}">{{ '+' if tendance > 0 }}{{ tendance }} % par rapport au mois précédent</span>{% endif %}
+    </li>
+    <li class="kpi">
+        <span class="stat-icone stat-bleu">{{ icone('activite', 22) }}</span>
+        <span class="kpi-valeur">{{ remplissage_global|round(1) }} %</span>
+        <span class="kpi-libelle">Taux de remplissage des cours</span>
+        <span class="kpi-note">4 dernières semaines</span>
+    </li>
+    <li class="kpi">
+        <span class="stat-icone stat-vert">{{ icone('membres', 22) }}</span>
+        <span class="kpi-valeur">{{ stats.membres.actifs }}</span>
+        <span class="kpi-libelle">Membres actifs</span>
+        <span class="kpi-note">sur {{ stats.membres.total }} membres{% if stats.membres.taux is not none %} ({{ stats.membres.taux }} %){% endif %}</span>
+    </li>
+    <li class="kpi">
+        <span class="stat-icone stat-orange">{{ icone('renouveler', 22) }}</span>
+        <span class="kpi-valeur">{% if stats.renouvellement.taux is not none %}{{ stats.renouvellement.taux }} %{% else %}n/a{% endif %}</span>
+        <span class="kpi-libelle">Taux de renouvellement</span>
+        <span class="kpi-note">{{ stats.renouvellement.renouveles }} renouvelés sur {{ stats.renouvellement.echus }} échéances</span>
+    </li>
+</ul>
+
+<div class="deux-colonnes deux-colonnes-egales">
+    <section class="carte" aria-labelledby="titre-recettes">
+        <div class="carte-entete">
+            <h2 id="titre-recettes">Recettes par formule</h2>
+            {% if mois %}
+            <form method="get" action="{{ url_for('admin_statistiques') }}" class="formulaire-mois">
+                <label class="visuellement-cache" for="mois">Mois affiché</label>
+                <select id="mois" name="mois" data-auto-envoi>
+                    {% for m in mois %}<option value="{{ m }}"{% if m == mois_choisi %} selected{% endif %}>{{ m|mois_fr }}</option>{% endfor %}
+                </select>
+                <noscript><button type="submit" class="bouton bouton-secondaire bouton-petit">Afficher</button></noscript>
+            </form>
+            {% endif %}
+        </div>
+        {% if recette_choisie %}
+        <div class="barres" role="img" aria-label="Recettes par formule en {{ mois_choisi|mois_fr }}">
+            {% for f in recette_choisie.formules %}
+            <div class="barre-colonne">
+                <span class="barre-valeur">{{ f.recette|fcfa }}</span>
+                <span class="barre-piste"><span class="barre-remplie" style="height: {{ [ (100 * f.recette / recette_max)|round|int, 3 ]|max if recette_max else 3 }}%"></span></span>
+                <span class="barre-nom">{{ f.formule }}</span>
+                <span class="barre-note">{{ f.nombre }} abonnement{{ 's' if f.nombre > 1 }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="etat-vide">Aucune recette enregistrée.</p>
+        {% endif %}
+    </section>
+
+    <section class="carte" aria-labelledby="titre-remplissage">
+        <h2 id="titre-remplissage">Taux de remplissage des cours</h2>
+        <div class="remplissage">
+            <div class="donut" style="--valeur: {{ remplissage_global }}" role="img" aria-label="Taux de remplissage global : {{ remplissage_global|round(1) }} %">
+                <span class="donut-valeur">{{ remplissage_global|round|int }} %</span>
+            </div>
+            <ul class="legende">
+                {% for d in disciplines %}
+                <li><span class="point disc-{{ d.discipline|slug }}"></span><span class="legende-nom">{{ d.discipline }}</span><span class="legende-valeur">{{ d.taux }} %</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+</div>
+
+<section class="carte" aria-labelledby="titre-detail">
+    <h2 id="titre-detail">Remplissage détaillé par cours</h2>
+    {% if stats.remplissage %}
+    <div class="tableau-conteneur">
+        <table class="tableau tableau-empile">
+            <thead><tr><th scope="col">Cours</th><th scope="col">Jour</th><th scope="col">Salle</th><th scope="col" class="colonne-nombre">Réservations</th><th scope="col" class="colonne-nombre">Capacité</th><th scope="col">Taux</th></tr></thead>
+            <tbody>
+                {% for c in stats.remplissage %}
+                <tr>
+                    <th scope="row" data-label="Cours"><span class="cours-nom"><span class="point disc-{{ c.discipline|slug }}"></span>{{ c.discipline }}</span></th>
+                    <td data-label="Jour">{{ c.jour }} {{ c.heure }}</td>
+                    <td data-label="Salle">{{ c.salle }}</td>
+                    <td data-label="Réservations" class="colonne-nombre">{{ c.reservations }}</td>
+                    <td data-label="Capacité" class="colonne-nombre">{{ c.places_max * c.seances }}</td>
+                    <td data-label="Taux"><span class="taux"><span class="taux-piste"><span class="taux-rempli" style="width: {{ [c.taux, 100]|min }}%"></span></span><span class="taux-valeur">{{ c.taux }} %</span></span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="etat-vide">Aucun cours au planning.</p>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base_app.html" %}
+{% from "_icones.html" import icone %}
+{% from "_composants.html" import badge, statut_places %}
+
+{% block titre %}Mes réservations{% endblock %}
+
+{% block contenu %}
+<div class="entete-page">
+    <h1>Mes réservations</h1>
+    <a class="bouton bouton-primaire bouton-petit" href="{{ url_for('planning') }}">{{ icone('plus', 16) }} Réserver un cours</a>
+</div>
+
+<div class="onglets onglets-gauche" role="group" aria-label="Type de réservations">
+    <a class="onglet{% if onglet == 'a_venir' %} actif{% endif %}" href="{{ url_for('membre_reservations', onglet='a_venir') }}"{% if onglet == 'a_venir' %} aria-current="page"{% endif %}>À venir ({{ nombre_a_venir }})</a>
+    <a class="onglet{% if onglet == 'historique' %} actif{% endif %}" href="{{ url_for('membre_reservations', onglet='historique') }}"{% if onglet == 'historique' %} aria-current="page"{% endif %}>Historique</a>
+</div>
+
+<section class="carte" aria-label="{{ 'Réservations à venir' if onglet == 'a_venir' else 'Historique des réservations' }}">
+    {% if reservations %}
+    <ul class="liste-reservations">
+        {% for r in reservations %}
+        <li class="reservation-ligne">
+            <span class="pastille-cours disc-{{ r.discipline|slug }}">{{ icone('halteres', 20) }}</span>
+            <div class="reservation-info">
+                <strong>{{ r.discipline }}</strong>
+                <span>{{ r.date_seance|jour_fr }} · {{ r.heure }}</span>
+                <span>{{ r.salle }} · {{ r.coach }}</span>
+            </div>
+            <span class="reservation-places" title="Places prises sur places maximales">{{ r.places_prises }}/{{ r.places_max }}</span>
+            {% if r.annulable %}
+            <form method="post" action="{{ url_for('annuler', reservation_id=r.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ jeton_csrf() }}">
+                <button type="submit" class="bouton bouton-danger bouton-petit" data-confirmer="Annuler cette réservation ?">Annuler</button>
+            </form>
+            {% else %}
+            {{ badge('Terminée', 'neutre') }}
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="etat-vide">
+        {% if onglet == 'a_venir' %}Aucune réservation à venir. <a href="{{ url_for('planning') }}">Choisissez un cours dans le planning</a>.
+        {% else %}Vous n’avez pas encore suivi de séance.{% endif %}
+    </p>
+    {% endif %}
+</section>
+
+<p class="avis avis-info">{{ icone('info', 18) }}<span>Vous pouvez annuler une réservation jusqu’au début de la séance.</span></p>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>{% endblock %}
